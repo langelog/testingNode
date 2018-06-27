@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+    db:
+        image: mongo
+        container_name: "mongodb"
+        volumes:
+            - ../db/:/data/db
+            - ../logs/:/mongologs
+        environment:
+            - MONGO_DATA_DIR=/data/db
+            - MONGO_LOG_DIR=/mongologs
+            - MONGODB_USER="itdev"
+            - MONGODB_PASS="1Q2w3e4r5t6y7u8i9o0p"
+        ports:
+            - "27017:27017"
+        restart: always
+    web:
+        build: ./node
+        container_name: "nodejs"
+        volumes:
+            - ../../Source/:/app
+        ports:
+            - "3000:3000"
+        links:
+            - db
+        command: bash
+        stdin_open: true
+        tty: true

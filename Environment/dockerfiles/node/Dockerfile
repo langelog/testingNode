@@ -17,3 +17,4 @@ RUN apt install -y qt5-default
 RUN echo 'alias ll="ls -lah"' >> ~/.bashrc
 
 EXPOSE 3000
+EXPOSE 3001

@@ -92,7 +92,7 @@ handlers._users.get = function(data, callback) {
                 delete data.hashedPassword;
                 callback(200, data);
             } else {
-                callbacl(404);
+                callback(404);
             }
         });
     } else {
@@ -236,7 +236,20 @@ handlers._tokens.post = function(data,callback) {
 
 // Tokens - get:
 handlers._tokens.get = function(data,callback) {
-
+    // check token id is valid
+    var id = typeof(data.queryStringObject.id) == "string" && data.queryStringObject.id.trim().length == 20? data.queryStringObject.id.trim() : false;
+    if(id) {
+        // Lookup the user
+        _data.read('tokens',id,function(err,tokenData) {
+            if(!err && tokenData) {
+                callback(200, tokenData);
+            } else {
+                callback(404);
+            }
+        });
+    } else {
+        callback(400, {'Error':'Missing require fields'});
+    }
 };
 
 // Tokens - put:

@@ -180,6 +180,75 @@ handlers._users.delete = function(data, callback) {
     }
 }
 
+
+// Users:
+handlers.tokens = function(data, callback) {
+    var acceptableMethods = ['post','get','put','delete'];
+    if(acceptableMethods.indexOf(data.method) > -1) {
+        handlers._tokens[data.method](data,callback);
+    } else {
+        callback(405);
+    }
+};
+
+// container for tokens submethods:
+handlers._tokens = {};
+
+// Tokens - post:
+// Required data: phone, password
+// Optional data: none 
+handlers._tokens.post = function(data,callback) {
+    var phone = typeof(data.payload.phone) == "string" && data.payload.phone.trim().length == 11? data.payload.phone.trim() : false;
+    var password     = typeof(data.payload.password) == "string" && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
+
+    if(phone && password) {
+        _data.read('users',phone,function(err,userData) {
+            if(!err && userData) {
+                var hashedPassword = helpers.hash(password);
+                if(hashedPassword == userData.hashedPassword) {
+                    // If valid, create new token with a random name. Set expiration date 1 hour in the future
+                    var tokenId = helpers.createRandomString(20);
+                    var expires = Date.now() + 1000 * 60 * 60;
+                    var tokenObject = {
+                        'phone': phone,
+                        'id': tokenId,
+                        'expires': expires
+                    };
+                    // Store the token
+                    _data.create('tokens',tokenId,tokenObject,function(err) {
+                        if(!err) {
+                            callback(200,tokenObject);
+                        } else {
+                            callback(500,{'error':'Could not create the token'});
+                        }
+                    });
+                } else {
+                    callback(400, {"error":"Password did not match the specified users stored password"});
+                }
+            } else {
+                callback(400, {"error":"Could not find the specific user"});
+            }
+        });
+    } else {
+        callbacl(400,{"error":"Missing required parameters"});
+    }
+};
+
+// Tokens - get:
+handlers._tokens.get = function(data,callback) {
+
+};
+
+// Tokens - put:
+handlers._tokens.put = function(data,callback) {
+
+};
+
+// Tokens - delete:
+handlers._tokens.delete = function(data,callback) {
+
+};
+
 // Not found Handler
 handlers.notFound = function(data, callback) {
     callback(404);
